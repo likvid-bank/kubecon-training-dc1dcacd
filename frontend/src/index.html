@@ -89,6 +89,10 @@
       min-height: 86px;
     }
 
+    .chase.caught {
+      gap: 6px;
+    }
+
     .meshi {
       width: 84px;
       height: 84px;
@@ -103,8 +107,20 @@
       min-width: 174px;
     }
 
+    .grass {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      display: block;
+    }
+
     .grasses.close {
       min-width: 34px;
+      gap: 0;
+    }
+
+    .grasses.none {
+      min-width: 0;
       gap: 0;
     }
 
@@ -118,6 +134,11 @@
       height: 110px;
       object-fit: contain;
       margin-left: 6px;
+    }
+
+    .chase.caught .wolf {
+      width: 215px;
+      height: 215px;
     }
 
     .edu-layout {
@@ -280,7 +301,7 @@
 <body>
   <main class="app">
     <header class="header">
-      <img class="header-image" src="header.png" alt="meshi's Escape" />
+      <img class="header-image" src="./training/header.png" alt="meshi's Escape" />
     </header>
 
     <section class="content">
@@ -295,7 +316,7 @@
   </main>
 
   <script>
-    const MAX_WRONG = 4;
+    const MAX_PITCH_WRONG = 2;
 
     const icpQuestions = [
       {
@@ -305,7 +326,7 @@
       },
       {
         question: "Which of these is a key persona we target?",
-        options: ["Junior Frontend Developers", "Platform Engineers", "Marketing Managers", "Sales Representatives"],
+        options: ["Junior Frontend Developers", "Platform Engineers", "CTOs", "Analysts"],
         correct: 1,
       },
       {
@@ -319,40 +340,53 @@
       {
         question: "Why do developers love meshStack?",
         options: [
-          "Manual ticket-based provisioning only",
-          "Developer Self-Service",
-          "Central team deploys everything for developers",
-          "Weekly request windows via spreadsheet",
-        ],
-        correct: 1,
-      },
-      {
-        question: "Which principle explains how the platform is operated and maintained?",
-        options: [
-          "meshStack can be Built as Code",
-          "meshStack is tight to K8s concepts",
-          "meshStack has it's own configuration language.",
-          "meshStack can only be configured via UI.",
+          "True Self-Service via UI/API/Terraform",
+          "Weekly release windows for platform requests",
+          "Manual ticketing for every cloud change",
+          "One-click access only for admins",
+          "Fixed templates with no API support",
         ],
         correct: 0,
       },
       {
-        question: "Which statement captures the sovereignty value proposition?",
+        question: "How do platform engineers manage the platform?",
         options: [
-          "Sovereignty through Choice",
-          "Sovereignty by restricting to European Cloud Providers",
-          "Sovereignty by solely offering open-source platforms",
-          "Sovereignty by abstracting the providers away",
+          "They can do everything as code",
+          "They have to learn a new configuration language",
+          "They can only use one cloud provider",
+          "They must configure each project manually in the UI",
+          "They need weekly vendor support for routine changes",
         ],
         correct: 0,
       },
-    ];
-
-    const meshstackOptions = [
-      "A containerization tool for Docker",
-      "A Sovereign IDP that unifies Golden Paths across any cloud provider",
-      "A Kubernetes monitoring solution",
-      "A CI/CD pipeline tool",
+      {
+        question: "How do organizations achieve more sovereignty through meshStack?",
+        options: [
+          "Sovereignty through choice, not restraint",
+          "Sovereignty by only offering European cloud providers",
+          "Sovereignty by blocking all public cloud usage",
+          "Sovereignty by enforcing one internal platform only",
+          "Sovereignty by removing provider-level controls",
+        ],
+        correct: 0,
+      },
+      {
+        question: "Which of the following are key values of meshStack? (Choose all correct answers)",
+        options: [
+          "meshStack is a Sovereign IDP.",
+          "Developers get true Self-Service via UI/API/Terraform.",
+          "Platform engineers can run the platform entirely as code with a modular architecture and swap components without breaking developer experience.",
+          "Sovereignty is achieved through choice across clouds (e.g. Azure and STACKIT), not restraint.",
+          "Developers must open manual tickets for every platform request.",
+          "Platform engineers need to learn a proprietary new configuration language.",
+          "Sovereignty means locking all workloads to one cloud provider.",
+          "meshStack is a Cloud Governance Platform.",
+          "Golden Paths work only for Kubernetes and cannot span different cloud platforms.",
+          "Self-service is limited to UI only and excludes API/Terraform.",
+        ],
+        correct: [0, 1, 2, 3],
+        multi: true,
+      },
     ];
 
     const state = {
@@ -360,6 +394,8 @@
       wrongCount: 0,
       icpIndex: 0,
       pitchIndex: 0,
+      pitchWrongCount: 0,
+      loseReason: "",
       message: "",
       messageType: "ok",
     };
@@ -392,24 +428,38 @@
       messageEl.className = `message ${state.messageType}`;
     }
 
+    function shuffleOptions(options) {
+      const indexedOptions = options.map((text, originalIndex) => ({ text, originalIndex }));
+      for (let i = indexedOptions.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+      }
+      return indexedOptions;
+    }
+
     function renderChaseBar() {
       let visibleGrass = 0;
 
-      if (state.stage === "start" || state.stage === "icp") {
-        visibleGrass = state.wrongCount > 0 ? 0 : 1;
-      } else if (state.stage === "lose") {
+      if (state.stage === "lose") {
         visibleGrass = 0;
+      } else if (state.stage === "Pitch") {
+        visibleGrass = Math.max(0, MAX_PITCH_WRONG - state.pitchWrongCount);
+      } else if (state.stage === "win") {
+        visibleGrass = 2;
+      } else if (state.stage === "start" || state.stage === "icp") {
+        visibleGrass = 1;
       } else {
-        visibleGrass = (state.wrongCount > 0 ? 0 : 1) + 2;
+        visibleGrass = 1;
       }
 
-      const grasses = Array.from({ length: visibleGrass }, () => "<span class=\"grass\">🌿</span>").join("");
-      const grassesClass = visibleGrass <= 1 ? "grasses close" : "grasses";
+      const grasses = Array.from({ length: visibleGrass }, () => "<img class=\"grass\" src=\"./training/grass.png\" alt=\"grass\" />").join("");
+      const grassesClass = visibleGrass === 0 ? "grasses none" : (visibleGrass <= 1 ? "grasses close" : "grasses");
+      chaseEl.className = state.stage === "lose" ? "chase caught" : "chase";
 
       chaseEl.innerHTML = `
-        <img class="wolf" src="wolf.png" alt="wolf" />
+        <img class="wolf" src="./training/wolf.png" alt="wolf" />
         <div class="${grassesClass}" aria-label="distance to wolf">${grasses}</div>
-        <img class="meshi" src="sheep.png" alt="sheep" />
+        <img class="meshi" src="./training/sheep.png" alt="sheep" />
       `;
     }
 
@@ -428,10 +478,11 @@
         state.icpIndex += 1;
 
         if (state.icpIndex >= icpQuestions.length) {
-          state.stage = "education";
+          state.stage = "Pitch";
         }
       } else {
         state.wrongCount += 1;
+        state.loseReason = "icp";
         state.stage = "lose";
         setMessage("❌ Wrong! The wolf caught meshi.", "bad");
       }
@@ -440,43 +491,40 @@
     }
 
     function submitPitchAnswer() {
-      const checked = document.querySelector('input[name="pitch-option"]:checked');
-      if (!checked) {
+      const checked = Array.from(document.querySelectorAll('input[name="pitch-option"]:checked'));
+      if (checked.length === 0) {
         setMessage("Please pick an answer first.", "bad");
         return;
       }
 
-      const selected = Number(checked.value);
+      const selected = checked
+        .map((input) => Number(input.value))
+        .sort((a, b) => a - b);
       const question = pitchQuestions[state.pitchIndex];
+      const expected = Array.isArray(question.correct)
+        ? [...question.correct].sort((a, b) => a - b)
+        : [question.correct];
 
-      if (selected === question.correct) {
+      const isCorrect = selected.length === expected.length
+        && selected.every((value, index) => value === expected[index]);
+
+      if (isCorrect) {
         state.pitchIndex += 1;
         if (state.pitchIndex >= pitchQuestions.length) {
           setMessage("✅ Great! You nailed the core pitch aspects.", "ok");
-          state.stage = "meshstack";
+          state.stage = "win";
         } else {
           setMessage("✅ Correct! Next key aspect.", "ok");
         }
       } else {
-        setMessage("❌ Not quite. Try again.", "bad");
-      }
-
-      render();
-    }
-
-    function submitMeshstack() {
-      const checked = document.querySelector('input[name="meshstack-option"]:checked');
-      if (!checked) {
-        setMessage("Please pick an answer first.", "bad");
-        return;
-      }
-
-      const selected = Number(checked.value);
-      if (selected === 1) {
-        state.stage = "win";
-        clearMessage();
-      } else {
-        setMessage("❌ Not quite. Think Sovereign IDP + Golden Paths across clouds.", "bad");
+        state.pitchWrongCount += 1;
+        if (state.pitchWrongCount >= MAX_PITCH_WRONG) {
+          state.loseReason = "Pitch";
+          state.stage = "lose";
+          setMessage("❌ Too many wrong answers. The wolf caught meshi.", "bad");
+        } else {
+          setMessage("❌ Not quite. Try again.", "bad");
+        }
       }
 
       render();
@@ -487,6 +535,8 @@
       state.wrongCount = 0;
       state.icpIndex = 0;
       state.pitchIndex = 0;
+      state.pitchWrongCount = 0;
+      state.loseReason = "";
       clearMessage();
       render();
     }
@@ -515,11 +565,12 @@
 
     function renderIcpScreen() {
       const question = icpQuestions[state.icpIndex];
-      const optionsHtml = question.options
-        .map((option, idx) => `
+      const shuffledOptions = shuffleOptions(question.options);
+      const optionsHtml = shuffledOptions
+        .map((option) => `
           <label class="option">
-            <input type="radio" name="icp-option" value="${idx}" />
-            <span>${option}</span>
+            <input type="radio" name="icp-option" value="${option.originalIndex}" />
+            <span>${option.text}</span>
           </label>
         `)
         .join("");
@@ -538,85 +589,35 @@
     }
 
     function renderEducationScreen() {
-      screenEl.innerHTML = `
-        <h2>Education <span class="badge">10 Second Pitch</span></h2>
-        <div class="story">
-          <p>Great work on ICP. Before moving on, let's learn the 10 second pitch.</p>
-        </div>
-
-        <div class="edu-layout">
-          <div class="edu-card">
-            <img class="edu-person" src="person_excited.svg" alt="Excited person asking" />
-            <div class="bubble"><strong>So, what is meshStack?</strong></div>
-          </div>
-
-          <div class="edu-card">
-            <img class="edu-person" src="person_funny.svg" alt="Funny person answering" />
-            <div class="bubble">
-              <ul>
-                <li><strong>meshStack</strong> is a <strong>Sovereign IDP</strong>. It <strong>unifies</strong> '<strong>Golden Paths</strong>' across any <strong>cloud, e.g. Azure and STACKIT.</strong></li>
-                <li>Its <strong>modular architecture</strong> lets you swap out components without breaking the developer experience, while everything is managed <strong>as Code in the background.</strong></li>
-                <li>Your devs get <strong>true self-service via UI/API or our Terraform Provider</strong> and the <strong>freedom of choice</strong> where to run their application.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="nextToTunnel">Next</button>
-        </div>
-      `;
-
-      document.getElementById("nextToTunnel").addEventListener("click", () => {
-        clearMessage();
-        state.stage = "pitchquiz";
-        render();
-      });
-    }
-
-    function renderPitchQuizScreen() {
       const question = pitchQuestions[state.pitchIndex];
-      const optionsHtml = question.options
-        .map((option, idx) => `
+      const shuffledOptions = shuffleOptions(question.options);
+      const inputType = question.multi ? "checkbox" : "radio";
+      const optionsHtml = shuffledOptions
+        .map((option) => `
           <label class="option">
-            <input type="radio" name="pitch-option" value="${idx}" />
-            <span>${option}</span>
+            <input type="${inputType}" name="pitch-option" value="${option.originalIndex}" />
+            <span>${option.text}</span>
           </label>
         `)
         .join("");
 
       screenEl.innerHTML = `
-        <h2>Nail the pitch! <span class="badge">Question ${state.pitchIndex + 1}/3</span></h2>
+        <h2>10 Second Pitch <span class="badge">Pitch</span></h2>
+        <div class="story">
+          <p>Great work on our ICP. Now let's get to the pitch.</p>
+        </div>
+
+        <h3>Question ${state.pitchIndex + 1}/${pitchQuestions.length}</h3>
         <div class="question">${question.question}</div>
         <div class="options">${optionsHtml}</div>
+
         <div class="actions">
-          <button id="submitPitch">✓ Submit Answer</button>
+          <button id="submitPitchFromEducation">✓ Submit Answer</button>
         </div>
+        <div class="hint">${question.multi ? "Choose all correct answers." : "Choose one answer."} You can get ${MAX_PITCH_WRONG} answers wrong in this stage before the wolf catches meshi.</div>
       `;
 
-      document.getElementById("submitPitch").addEventListener("click", submitPitchAnswer);
-    }
-
-    function renderMeshstackScreen() {
-      const optionsHtml = meshstackOptions
-        .map((option, idx) => `
-          <label class="option">
-            <input type="radio" name="meshstack-option" value="${idx}" />
-            <span>${option}</span>
-          </label>
-        `)
-        .join("");
-
-      screenEl.innerHTML = `
-        <h2>Final Gate <span class="badge">Multiple Choice</span></h2>
-        <div class="question">What is meshStack?</div>
-        <div class="options">${optionsHtml}</div>
-        <div class="actions">
-          <button id="submitMeshstack">✓ Submit Final Answer</button>
-        </div>
-      `;
-
-      document.getElementById("submitMeshstack").addEventListener("click", submitMeshstack);
+      document.getElementById("submitPitchFromEducation").addEventListener("click", submitPitchAnswer);
     }
 
     function renderWinScreen() {
@@ -624,7 +625,7 @@
         <h2>🎉 meshi Escaped! <span class="badge">Victory</span></h2>
         <div class="story">
           <p>You got meshi safely to the pastures.</p>
-          <p>You passed the ICP gate, unlocked the tunnel with a strong opener, and nailed the meshStack definition.</p>
+          <p>You passed the ICP gate and learned the 10 second pitch.</p>
         </div>
         <div class="actions">
           <button id="playAgain">🔄 Play Again</button>
@@ -635,10 +636,14 @@
     }
 
     function renderLoseScreen() {
+      const loseDetail = state.loseReason === "Pitch"
+        ? "You reached 2 wrong answers in the Pitch stage."
+        : "A wrong answer in the ICP gate let the wolf reach meshi.";
+
       screenEl.innerHTML = `
         <h2>💔 The Wolf Caught meshi <span class="badge">Game Over</span></h2>
         <div class="story">
-          <p>A wrong answer in the ICP gate let the wolf reach meshi.</p>
+          <p>${loseDetail}</p>
           <p>Try again and keep more grass between meshi and the wolf.</p>
         </div>
         <div class="actions">
@@ -660,14 +665,8 @@
         case "icp":
           renderIcpScreen();
           break;
-        case "education":
+        case "Pitch":
           renderEducationScreen();
-          break;
-        case "pitchquiz":
-          renderPitchQuizScreen();
-          break;
-        case "meshstack":
-          renderMeshstackScreen();
           break;
         case "win":
           renderWinScreen();
