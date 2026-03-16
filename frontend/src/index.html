@@ -1,13 +1,686 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>MyAngularApp</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>meshi's Escape</title>
+  <style>
+    :root {
+      --bg1: #f6fbff;
+      --bg2: #eaf7ef;
+      --card: #ffffff;
+      --text: #1f2a37;
+      --muted: #6b7280;
+      --ok-bg: #e8f7ec;
+      --ok-border: #9ad9ac;
+      --ok-text: #166534;
+      --bad-bg: #fdecec;
+      --bad-border: #f5c2c7;
+      --bad-text: #842029;
+      --accent: #2563eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(6px);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .header {
+      padding: 26px 28px 12px;
+      background: linear-gradient(120deg, #eef6ff, #effaf2);
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-image {
+      display: block;
+      width: min(100%, 760px);
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .content {
+      padding: 22px 28px 30px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .story {
+      line-height: 1.55;
+      color: #243246;
+    }
+
+    .chase {
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+      font-size: 2.2rem;
+      padding: 10px 4px;
+      min-height: 86px;
+    }
+
+    .meshi {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+    }
+
+    .grasses {
+      display: flex;
+      gap: 4px;
+      font-size: 2.1rem;
+      letter-spacing: -2px;
+      min-width: 174px;
+    }
+
+    .grasses.close {
+      min-width: 34px;
+      gap: 0;
+    }
+
+    .grass.gone {
+      opacity: 0.22;
+      filter: grayscale(100%);
+    }
+
+    .wolf {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      margin-left: 6px;
+    }
+
+    .edu-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 10px;
+      align-items: start;
+    }
+
+    .edu-card {
+      border: 1px solid #dbe4ea;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfdff;
+    }
+
+    .edu-person {
+      width: 100%;
+      max-width: 220px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    .bubble {
+      background: #f7fafc;
+      border: 1px solid #d9e2ec;
+      border-radius: 12px;
+      padding: 10px 12px;
+      line-height: 1.45;
+    }
+
+    .bubble ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .bubble li {
+      margin-bottom: 8px;
+    }
+
+    .bubble li:last-child {
+      margin-bottom: 0;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f2f4f7;
+      color: #374151;
+      font-size: 0.78rem;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+
+    .message {
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 600;
+      border: 1px solid;
+      display: none;
+    }
+
+    .message.ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      color: var(--ok-text);
+    }
+
+    .message.bad {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .question {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .option {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid #dbe1e7;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: 0.15s ease;
+      background: #fff;
+    }
+
+    .option:hover { border-color: #9aa7b5; }
+
+    .option input { margin: 0; }
+
+    textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 110px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 11px;
+      font: inherit;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button.secondary {
+      background: #334155;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 700px) {
+      .content { padding: 16px; }
+      .header { padding: 18px 16px 10px; }
+      .meshi { width: 64px; height: 64px; }
+      .chase { font-size: 1.8rem; gap: 8px; }
+      .grasses { font-size: 1.7rem; min-width: 130px; }
+      .wolf { width: 85px; height: 85px; }
+      .edu-layout { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <main class="app">
+    <header class="header">
+      <img class="header-image" src="training/header.png" alt="meshi's Escape" />
+    </header>
+
+    <section class="content">
+      <div id="message" class="message"></div>
+
+      <div class="panel">
+        <div id="chase" class="chase"></div>
+      </div>
+
+      <div id="screen" class="panel"></div>
+    </section>
+  </main>
+
+  <script>
+    const MAX_WRONG = 4;
+
+    const icpQuestions = [
+      {
+        question: "What is the minimum company size for our Ideal Customer Profile?",
+        options: ["500 employees", "1,000 employees", "5,000 employees", "10,000 employees"],
+        correct: 1,
+      },
+      {
+        question: "Which of these is a key persona we target?",
+        options: ["Junior Frontend Developers", "Platform Engineers", "Marketing Managers", "Sales Representatives"],
+        correct: 1,
+      },
+      {
+        question: "What technical environment are our ideal customers typically in?",
+        options: ["Docker only", "Kubernetes & cloud-native", "VM-based infrastructure", "Serverless only"],
+        correct: 1,
+      },
+    ];
+
+    const pitchQuestions = [
+      {
+        question: "Why do developers love meshStack?",
+        options: [
+          "Manual ticket-based provisioning only",
+          "Developer Self-Service",
+          "Central team deploys everything for developers",
+          "Weekly request windows via spreadsheet",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Which principle explains how the platform is operated and maintained?",
+        options: [
+          "meshStack can be Built as Code",
+          "meshStack is tight to K8s concepts",
+          "meshStack has it's own configuration language.",
+          "meshStack can only be configured via UI.",
+        ],
+        correct: 0,
+      },
+      {
+        question: "Which statement captures the sovereignty value proposition?",
+        options: [
+          "Sovereignty through Choice",
+          "Sovereignty by restricting to European Cloud Providers",
+          "Sovereignty by solely offering open-source platforms",
+          "Sovereignty by abstracting the providers away",
+        ],
+        correct: 0,
+      },
+    ];
+
+    const meshstackOptions = [
+      "A containerization tool for Docker",
+      "A Sovereign IDP that unifies Golden Paths across any cloud provider",
+      "A Kubernetes monitoring solution",
+      "A CI/CD pipeline tool",
+    ];
+
+    const state = {
+      stage: "start",
+      wrongCount: 0,
+      icpIndex: 0,
+      pitchIndex: 0,
+      message: "",
+      messageType: "ok",
+    };
+
+    const messageEl = document.getElementById("message");
+    const chaseEl = document.getElementById("chase");
+    const screenEl = document.getElementById("screen");
+
+    function setMessage(text, type = "ok") {
+      state.message = text;
+      state.messageType = type;
+      renderMessage();
+    }
+
+    function clearMessage() {
+      state.message = "";
+      renderMessage();
+    }
+
+    function renderMessage() {
+      if (!state.message) {
+        messageEl.style.display = "none";
+        messageEl.textContent = "";
+        messageEl.className = "message";
+        return;
+      }
+
+      messageEl.style.display = "block";
+      messageEl.textContent = state.message;
+      messageEl.className = `message ${state.messageType}`;
+    }
+
+    function renderChaseBar() {
+      let visibleGrass = 0;
+
+      if (state.stage === "start" || state.stage === "icp") {
+        visibleGrass = state.wrongCount > 0 ? 0 : 1;
+      } else if (state.stage === "lose") {
+        visibleGrass = 0;
+      } else {
+        visibleGrass = (state.wrongCount > 0 ? 0 : 1) + 2;
+      }
+
+      const grasses = Array.from({ length: visibleGrass }, () => "<span class=\"grass\">🌿</span>").join("");
+      const grassesClass = visibleGrass <= 1 ? "grasses close" : "grasses";
+
+      chaseEl.innerHTML = `
+        <img class="wolf" src="training/wolf.png" alt="wolf" />
+        <div class="${grassesClass}" aria-label="distance to wolf">${grasses}</div>
+        <img class="meshi" src="training/sheep.png" alt="sheep" />
+      `;
+    }
+
+    function submitIcpAnswer() {
+      const checked = document.querySelector('input[name="icp-option"]:checked');
+      if (!checked) {
+        setMessage("Please pick an answer first.", "bad");
+        return;
+      }
+
+      const selected = Number(checked.value);
+      const question = icpQuestions[state.icpIndex];
+
+      if (selected === question.correct) {
+        setMessage("✅ Correct! meshi keeps running...", "ok");
+        state.icpIndex += 1;
+
+        if (state.icpIndex >= icpQuestions.length) {
+          state.stage = "education";
+        }
+      } else {
+        state.wrongCount += 1;
+        state.stage = "lose";
+        setMessage("❌ Wrong! The wolf caught meshi.", "bad");
+      }
+
+      render();
+    }
+
+    function submitPitchAnswer() {
+      const checked = document.querySelector('input[name="pitch-option"]:checked');
+      if (!checked) {
+        setMessage("Please pick an answer first.", "bad");
+        return;
+      }
+
+      const selected = Number(checked.value);
+      const question = pitchQuestions[state.pitchIndex];
+
+      if (selected === question.correct) {
+        state.pitchIndex += 1;
+        if (state.pitchIndex >= pitchQuestions.length) {
+          setMessage("✅ Great! You nailed the core pitch aspects.", "ok");
+          state.stage = "meshstack";
+        } else {
+          setMessage("✅ Correct! Next key aspect.", "ok");
+        }
+      } else {
+        setMessage("❌ Not quite. Try again.", "bad");
+      }
+
+      render();
+    }
+
+    function submitMeshstack() {
+      const checked = document.querySelector('input[name="meshstack-option"]:checked');
+      if (!checked) {
+        setMessage("Please pick an answer first.", "bad");
+        return;
+      }
+
+      const selected = Number(checked.value);
+      if (selected === 1) {
+        state.stage = "win";
+        clearMessage();
+      } else {
+        setMessage("❌ Not quite. Think Sovereign IDP + Golden Paths across clouds.", "bad");
+      }
+
+      render();
+    }
+
+    function resetGame() {
+      state.stage = "start";
+      state.wrongCount = 0;
+      state.icpIndex = 0;
+      state.pitchIndex = 0;
+      clearMessage();
+      render();
+    }
+
+    function startGame() {
+      state.stage = "icp";
+      clearMessage();
+      render();
+    }
+
+    function renderStartScreen() {
+      screenEl.innerHTML = `
+        <h2>The Chase Begins <span class="badge">Story Intro</span></h2>
+        <div class="story">
+          <p>meshi the sheep is being chased by a wolf and needs to reach safe pastures.</p>
+          <p>To gain some distance, answer <strong>3 ICP questions</strong> correctly.</p>
+          <p><strong>One wrong answer in the ICP gate and the wolf eats meshi.</strong></p>
+        </div>
+        <div class="actions">
+          <button id="startBtn">🏃 Start the Escape</button>
+        </div>
+      `;
+
+      document.getElementById("startBtn").addEventListener("click", startGame);
+    }
+
+    function renderIcpScreen() {
+      const question = icpQuestions[state.icpIndex];
+      const optionsHtml = question.options
+        .map((option, idx) => `
+          <label class="option">
+            <input type="radio" name="icp-option" value="${idx}" />
+            <span>${option}</span>
+          </label>
+        `)
+        .join("");
+
+      screenEl.innerHTML = `
+        <h2>ICP Knowledge Gate <span class="badge">Question ${state.icpIndex + 1}/3</span></h2>
+        <div class="question">${question.question}</div>
+        <div class="options">${optionsHtml}</div>
+        <div class="actions">
+          <button id="submitIcp">✓ Submit Answer</button>
+        </div>
+        <div class="hint">One wrong answer in ICP = game over.</div>
+      `;
+
+      document.getElementById("submitIcp").addEventListener("click", submitIcpAnswer);
+    }
+
+    function renderEducationScreen() {
+      screenEl.innerHTML = `
+        <h2>Education <span class="badge">10 Second Pitch</span></h2>
+        <div class="story">
+          <p>Great work on ICP. Before moving on, let's learn the 10 second pitch.</p>
+        </div>
+
+        <div class="edu-layout">
+          <div class="edu-card">
+            <img class="edu-person" src="training/person_excited.svg" alt="Excited person asking" />
+            <div class="bubble"><strong>So, what is meshStack?</strong></div>
+          </div>
+
+          <div class="edu-card">
+            <img class="edu-person" src="training/person_funny.svg" alt="Funny person answering" />
+            <div class="bubble">
+              <ul>
+                <li><strong>meshStack</strong> is a <strong>Sovereign IDP</strong>. It <strong>unifies</strong> '<strong>Golden Paths</strong>' across any <strong>cloud, e.g. Azure and STACKIT.</strong></li>
+                <li>Its <strong>modular architecture</strong> lets you swap out components without breaking the developer experience, while everything is managed <strong>as Code in the background.</strong></li>
+                <li>Your devs get <strong>true self-service via UI/API or our Terraform Provider</strong> and the <strong>freedom of choice</strong> where to run their application.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="nextToTunnel">Next</button>
+        </div>
+      `;
+
+      document.getElementById("nextToTunnel").addEventListener("click", () => {
+        clearMessage();
+        state.stage = "pitchquiz";
+        render();
+      });
+    }
+
+    function renderPitchQuizScreen() {
+      const question = pitchQuestions[state.pitchIndex];
+      const optionsHtml = question.options
+        .map((option, idx) => `
+          <label class="option">
+            <input type="radio" name="pitch-option" value="${idx}" />
+            <span>${option}</span>
+          </label>
+        `)
+        .join("");
+
+      screenEl.innerHTML = `
+        <h2>Nail the pitch! <span class="badge">Question ${state.pitchIndex + 1}/3</span></h2>
+        <div class="question">${question.question}</div>
+        <div class="options">${optionsHtml}</div>
+        <div class="actions">
+          <button id="submitPitch">✓ Submit Answer</button>
+        </div>
+      `;
+
+      document.getElementById("submitPitch").addEventListener("click", submitPitchAnswer);
+    }
+
+    function renderMeshstackScreen() {
+      const optionsHtml = meshstackOptions
+        .map((option, idx) => `
+          <label class="option">
+            <input type="radio" name="meshstack-option" value="${idx}" />
+            <span>${option}</span>
+          </label>
+        `)
+        .join("");
+
+      screenEl.innerHTML = `
+        <h2>Final Gate <span class="badge">Multiple Choice</span></h2>
+        <div class="question">What is meshStack?</div>
+        <div class="options">${optionsHtml}</div>
+        <div class="actions">
+          <button id="submitMeshstack">✓ Submit Final Answer</button>
+        </div>
+      `;
+
+      document.getElementById("submitMeshstack").addEventListener("click", submitMeshstack);
+    }
+
+    function renderWinScreen() {
+      screenEl.innerHTML = `
+        <h2>🎉 meshi Escaped! <span class="badge">Victory</span></h2>
+        <div class="story">
+          <p>You got meshi safely to the pastures.</p>
+          <p>You passed the ICP gate, unlocked the tunnel with a strong opener, and nailed the meshStack definition.</p>
+        </div>
+        <div class="actions">
+          <button id="playAgain">🔄 Play Again</button>
+        </div>
+      `;
+
+      document.getElementById("playAgain").addEventListener("click", resetGame);
+    }
+
+    function renderLoseScreen() {
+      screenEl.innerHTML = `
+        <h2>💔 The Wolf Caught meshi <span class="badge">Game Over</span></h2>
+        <div class="story">
+          <p>A wrong answer in the ICP gate let the wolf reach meshi.</p>
+          <p>Try again and keep more grass between meshi and the wolf.</p>
+        </div>
+        <div class="actions">
+          <button id="tryAgain">🔄 Try Again</button>
+        </div>
+      `;
+
+      document.getElementById("tryAgain").addEventListener("click", resetGame);
+    }
+
+    function render() {
+      renderMessage();
+      renderChaseBar();
+
+      switch (state.stage) {
+        case "start":
+          renderStartScreen();
+          break;
+        case "icp":
+          renderIcpScreen();
+          break;
+        case "education":
+          renderEducationScreen();
+          break;
+        case "pitchquiz":
+          renderPitchQuizScreen();
+          break;
+        case "meshstack":
+          renderMeshstackScreen();
+          break;
+        case "win":
+          renderWinScreen();
+          break;
+        case "lose":
+          renderLoseScreen();
+          break;
+        default:
+          renderStartScreen();
+      }
+    }
+
+    render();
+  </script>
 </body>
 </html>
