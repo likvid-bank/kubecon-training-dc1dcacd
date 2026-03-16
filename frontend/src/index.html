@@ -440,6 +440,15 @@
     function renderChaseBar() {
       let visibleGrass = 0;
 
+       if (state.stage === "win") {
+        chaseEl.className = "chase";
+        chaseEl.innerHTML = `
+          <img class="meshi" src="./training/sheep.png" alt="sheep" />
+          <div class="win-heart" aria-label="heart">❤️</div>
+        `;
+        return;
+      }
+
       if (state.stage === "lose") {
         visibleGrass = 0;
       } else if (state.stage === "Pitch") {
