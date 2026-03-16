@@ -301,7 +301,7 @@
 <body>
   <main class="app">
     <header class="header">
-      <img class="header-image" src="./training/header.png" alt="meshi's Escape" />
+      <img class="header-image" src="header.png" alt="meshi's Escape" />
     </header>
 
     <section class="content">
@@ -452,14 +452,14 @@
         visibleGrass = 1;
       }
 
-      const grasses = Array.from({ length: visibleGrass }, () => "<img class=\"grass\" src=\"./training/grass.png\" alt=\"grass\" />").join("");
+      const grasses = Array.from({ length: visibleGrass }, () => "<img class=\"grass\" src=\"grass.png\" alt=\"grass\" />").join("");
       const grassesClass = visibleGrass === 0 ? "grasses none" : (visibleGrass <= 1 ? "grasses close" : "grasses");
       chaseEl.className = state.stage === "lose" ? "chase caught" : "chase";
 
       chaseEl.innerHTML = `
-        <img class="wolf" src="./training/wolf.png" alt="wolf" />
+        <img class="wolf" src="wolf.png" alt="wolf" />
         <div class="${grassesClass}" aria-label="distance to wolf">${grasses}</div>
-        <img class="meshi" src="./training/sheep.png" alt="sheep" />
+        <img class="meshi" src="sheep.png" alt="sheep" />
       `;
     }
 
